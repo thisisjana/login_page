@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Form with Validation & Dashboard</title>
+</head>
+<body>
+
+    <main class="app-container">
+
+        <!-- Signup Section -->
+        <section class="signup-section" id="signupSection">
+            <h1>Create Your Account</h1>
+            <p class="section-description">
+                Fill in the details below to sign up. All fields are required.
+            </p>
+
+            <form id="signupForm" novalidate>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        required
+                    >
+                    <span class="error-message" id="usernameError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                    >
+                    <span class="error-message" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                    >
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+
+                <button type="submit" id="submitBtn">Create Account</button>
+
+            </form>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section class="dashboard-section" id="dashboardSection">
+            <h2>Registered Users</h2>
+            <p class="section-description">
+                All users who have successfully signed up will appear in the table below.
+            </p>
+
+            <p class="user-count" id="userCount">Total Users: 0</p>
+
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Username</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Password</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- JavaScript will insert user rows here -->
+                </tbody>
+            </table>
+
+            <p class="empty-state" id="emptyState">
+                No registered users yet. Sign up above to see them listed here.
+            </p>
+
+        </section>
+
+    </main>
+
+</body>
+</html>
