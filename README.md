@@ -1,134 +1,55 @@
-# login_page
 # NSCC Signup & User Dashboard
 
-A simple client-side signup and user management application developed as part of the **NSCC Technical Task – 1st Year Track**.
+A simple client-side signup and user management web application built for the NSCC Technical Task . It allows users to register with a username, email, and password, validates their information, and displays registered users through a dashboard.
 
-## 📌 Project Overview
-
-This project allows users to register using a username, email address, and password. JavaScript validates the submitted information before creating a user record.
-
-Valid user details are stored in the browser's `localStorage`, allowing the registered data to remain available even after refreshing or reopening the page.
-
-The application also includes a dashboard where all registered users are displayed in a table. Users can be removed from the dashboard using the Delete functionality.
-
-### Core Flow
-
-**Signup → Validation → User Object → localStorage → Dashboard → Delete**
-
-##  Features
+## Features
 
 * User signup form
-* Username validation
-* Email format validation
-* Password validation
+* Username, email, and password validation
 * Clear validation error messages
+* Duplicate email prevention
+* Password visibility toggle
 * Registered user dashboard
 * Dynamic user count
 * Display of registered users in a table
-* Delete user functionality
-* Persistent data using `localStorage`
+* Delete registered users
+* Persistent data storage using LocalStorage
 * Responsive design for different screen sizes
 * Empty-state handling when no users are registered
-* Duplicate email prevention
-* Password visibility toggle
 
-##  Technologies Used
+## Tech Stack
 
-* **HTML5** – Page structure and form elements
-* **CSS3** – Styling, layout, responsiveness, and user interface
-* **JavaScript** – Form validation, DOM manipulation, user management, and event handling
-* **localStorage** – Client-side storage of registered user data
-* **JSON** – Converting the users array for storage and retrieval
+* HTML5
+* CSS3
+* JavaScript
+* LocalStorage API
+* JSON
 
-## 🔐 Validation Rules
+## Validation
 
-### Username
-
-* Cannot be empty
-* Must meet the minimum length requirement
-* Only allowed characters are accepted
-
-### Email
-
-* Cannot be empty
-* Must follow a valid email format
+* Username cannot be empty and must follow the required format
+* Email must follow a valid email format
 * Duplicate email addresses are not allowed
+* Password must meet the minimum length requirement
+* Validation errors are displayed clearly to the user
 
-### Password
+## Project Structure
 
-* Cannot be empty
-* Must meet the minimum password length requirement
-
-Validation is handled through separate JavaScript functions such as:
-
-* `validateUsername()`
-* `validateEmail()`
-* `validatePassword()`
-
-This keeps the validation logic organized and easier to understand.
-
-
-##  Project Structure
-
-
-nscc-signup-dashboard/
-│
+```text
 ├── index.html
 ├── style.css
 ├── script.js
 └── README.md
+```
 
+## How It Works
 
-### `index.html`
+The application follows a simple flow:
 
-Contains the structure of the application, including:
+**Signup → Validation → User Object → LocalStorage → Dashboard → Delete**
 
-* Signup form
-* Input fields
-* Error-message areas
-* Dashboard
-* User count
-* Registered users table
+User details are validated before being stored in the browser's LocalStorage. Registered users can then be viewed and managed from the dashboard.
 
-### `style.css`
+## About
 
-Contains:
-
-* Page layout
-* Typography
-* Form styling
-* Button styling
-* Error states
-* Table styling
-* Responsive design
-
-### `script.js`
-
-Contains the application's functionality, including:
-
-* Form submission
-* Input validation
-* User object creation
-* Users array management
-* DOM manipulation
-* Dashboard rendering
-* localStorage operations
-* Delete functionality
-
-### `README.md`
-
-Contains project documentation, setup instructions, features, and implementation details.
-
-
-##  Task Context
-
-This project was developed according to the NSCC Technical Task requirements for the 1st Year Track:
-
-**Signup Form with Validation & Dashboard**
-
-The required functionality includes username, email, and password validation, storing user details in `localStorage`, and displaying registered users in a dashboard table. Delete functionality is included as an additional feature.
-
----
-
-**Built with HTML, CSS, JavaScript & localStorage.**
-
+A simple signup and user dashboard application created as part of the NSCC Technical Task.
