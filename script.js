@@ -3,7 +3,7 @@ const STORAGE_KEY = "registeredUsers";
 const MIN_PASSWORD_LENGTH = 6;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// ===== DOM elements =====
+// ===== Get HTML elements =====
 const form = document.getElementById("signup-form");
 const usernameInput = document.getElementById("username");
 const emailInput = document.getElementById("email");
@@ -15,176 +15,260 @@ const tableBody = document.getElementById("users-table-body");
 const userCount = document.getElementById("user-count");
 const emptyState = document.getElementById("empty-state");
 
-// ===== State =====
+// ===== Users =====
 let users = loadUsers();
 
-// ===== LocalStorage helpers =====
+
+// ===== LocalStorage =====
+
 function loadUsers() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  } catch (error) {
-    console.error("Could not read users from LocalStorage:", error);
-    return [];
+  const savedUsers = localStorage.getItem(STORAGE_KEY);
+
+  if (savedUsers) {
+    const users = JSON.parse(savedUsers);
+
+    // Remove old users that stored plain passwords
+    if (users.some(user => user.password)) {
+      localStorage.removeItem(STORAGE_KEY);
+      return [];
+    }
+
+    return users;
   }
+
+  return [];
 }
 
 function saveUsers() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
 }
 
-// ===== Validation helpers =====
+
+// ===== Password Hashing =====
+
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+
+  // Create a random salt
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+
+  // Prepare the password
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+
+  // Create the hash
+  const hash = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 600000,
+      hash: "SHA-256"
+    },
+    key,
+    256
+  );
+
+  return {
+    passwordHash: Array.from(new Uint8Array(hash))
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join(""),
+
+    passwordSalt: Array.from(salt)
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("")
+  };
+}
+
+
+// ===== Validation =====
+
 function showError(input, message) {
-  const errorEl = document.getElementById(input.id + "-error");
-  errorEl.textContent = message;
+  const error = document.getElementById(input.id + "-error");
+
+  error.textContent = message;
   input.classList.add("is-invalid");
-  input.setAttribute("aria-invalid", "true");
 }
 
 function clearError(input) {
-  const errorEl = document.getElementById(input.id + "-error");
-  errorEl.textContent = "";
+  const error = document.getElementById(input.id + "-error");
+
+  error.textContent = "";
   input.classList.remove("is-invalid");
-  input.removeAttribute("aria-invalid");
 }
 
 function validateUsername() {
-  const value = usernameInput.value.trim();
-  if (value === "") {
+  if (usernameInput.value.trim() === "") {
     showError(usernameInput, "Username is required.");
     return false;
   }
+
   clearError(usernameInput);
   return true;
 }
 
 function validateEmail() {
-  const value = emailInput.value.trim().toLowerCase();
-  if (value === "") {
+  const email = emailInput.value.trim().toLowerCase();
+
+  if (email === "") {
     showError(emailInput, "Email is required.");
     return false;
   }
-  if (!EMAIL_PATTERN.test(value)) {
-    showError(emailInput, "Please enter a valid email address (e.g. name@example.com).");
+
+  if (!EMAIL_PATTERN.test(email)) {
+    showError(emailInput, "Please enter a valid email address.");
     return false;
   }
-  const alreadyExists = users.some((user) => user.email.toLowerCase() === value);
-  if (alreadyExists) {
-    showError(emailInput, "This email is already registered. Please use a different one.");
+
+  if (users.some(user => user.email === email)) {
+    showError(emailInput, "This email is already registered.");
     return false;
   }
+
   clearError(emailInput);
   return true;
 }
 
 function validatePassword() {
-  const value = passwordInput.value;
-  if (value === "") {
+  const password = passwordInput.value;
+
+  if (password === "") {
     showError(passwordInput, "Password is required.");
     return false;
   }
-  if (value.length < MIN_PASSWORD_LENGTH) {
-    showError(passwordInput, `Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
+
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    showError(
+      passwordInput,
+      "Password must be at least 6 characters long."
+    );
     return false;
   }
+
   clearError(passwordInput);
   return true;
 }
 
-// ===== Rendering =====
-function renderUsers() {
+
+// ===== Display Users =====
+
+function displayUsers() {
   tableBody.innerHTML = "";
 
-  users.forEach((user) => {
+  users.forEach(user => {
     const row = document.createElement("tr");
 
-    const usernameCell = document.createElement("td");
-    usernameCell.className = "cell-username";
-    usernameCell.textContent = user.username;
+    row.innerHTML = `
+      <td>${user.username}</td>
+      <td>${user.email}</td>
+      <td>Protected</td>
+      <td>
+        <button class="btn btn-delete" onclick="deleteUser(${user.id})">
+          Delete
+        </button>
+      </td>
+    `;
 
-    const emailCell = document.createElement("td");
-    emailCell.className = "cell-email";
-    emailCell.textContent = user.email;
-
-    const passwordCell = document.createElement("td");
-    passwordCell.className = "cell-password";
-    passwordCell.textContent = user.password;
-
-    const actionCell = document.createElement("td");
-    actionCell.className = "cell-action";
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "btn btn-delete";
-    deleteBtn.textContent = "Delete";
-    deleteBtn.setAttribute("aria-label", `Delete user ${user.username}`);
-    deleteBtn.addEventListener("click", () => deleteUser(user.id));
-    actionCell.appendChild(deleteBtn);
-
-    row.append(usernameCell, emailCell, passwordCell, actionCell);
     tableBody.appendChild(row);
   });
 
   userCount.textContent = users.length;
-  emptyState.classList.toggle("is-hidden", users.length > 0);
+
+  emptyState.classList.toggle(
+    "is-hidden",
+    users.length > 0
+  );
 }
 
-// ===== Actions =====
-function addUser(username, email, password) {
+
+// ===== Add User =====
+
+async function addUser() {
+  const username = usernameInput.value.trim();
+  const email = emailInput.value.trim().toLowerCase();
+  const password = passwordInput.value;
+
+  // Convert password into a hash
+  const passwordData = await hashPassword(password);
+
   users.push({
     id: Date.now(),
-    username,
-    email,
-    password,
+    username: username,
+    email: email,
+    passwordHash: passwordData.passwordHash,
+    passwordSalt: passwordData.passwordSalt
   });
+
   saveUsers();
-  renderUsers();
+  displayUsers();
 }
+
+
+// ===== Delete User =====
 
 function deleteUser(id) {
-  users = users.filter((user) => user.id !== id);
+  users = users.filter(user => user.id !== id);
+
   saveUsers();
-  renderUsers();
+  displayUsers();
 }
 
-function showSuccess(message) {
-  successMessage.textContent = message;
-  clearTimeout(showSuccess.timer);
-  showSuccess.timer = setTimeout(() => {
-    successMessage.textContent = "";
-  }, 3000);
-}
 
-// ===== Event listeners =====
-form.addEventListener("submit", (event) => {
+// ===== Form Submit =====
+
+form.addEventListener("submit", async function(event) {
   event.preventDefault();
 
-  // Run every validator so all errors show at once.
-  const isUsernameValid = validateUsername();
-  const isEmailValid = validateEmail();
-  const isPasswordValid = validatePassword();
+  const usernameValid = validateUsername();
+  const emailValid = validateEmail();
+  const passwordValid = validatePassword();
 
-  if (!isUsernameValid || !isEmailValid || !isPasswordValid) {
+  if (!usernameValid || !emailValid || !passwordValid) {
     return;
   }
 
-  addUser(usernameInput.value.trim(), emailInput.value.trim(), passwordInput.value);
+  await addUser();
+
   form.reset();
-  usernameInput.focus();
-  showSuccess("Account created successfully!");
+
+  successMessage.textContent = "Account created successfully!";
+
+  setTimeout(() => {
+    successMessage.textContent = "";
+  }, 3000);
 });
 
-// Clear an error as soon as the user starts fixing that field.
-usernameInput.addEventListener("input", () => clearError(usernameInput));
-emailInput.addEventListener("input", () => clearError(emailInput));
-passwordInput.addEventListener("input", () => clearError(passwordInput));
+
+// ===== Clear Errors =====
+
+usernameInput.addEventListener("input", () => {
+  clearError(usernameInput);
+});
+
+emailInput.addEventListener("input", () => {
+  clearError(emailInput);
+});
+
+passwordInput.addEventListener("input", () => {
+  clearError(passwordInput);
+});
+
+
+// ===== Show / Hide Password =====
 
 togglePasswordBtn.addEventListener("click", () => {
-  const isHidden = passwordInput.type === "password";
-  passwordInput.type = isHidden ? "text" : "password";
-  togglePasswordBtn.classList.toggle("is-visible", isHidden);
-  togglePasswordBtn.setAttribute("aria-pressed", String(isHidden));
-  togglePasswordBtn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+  } else {
+    passwordInput.type = "password";
+  }
 });
 
-// ===== Initial render =====
-renderUsers();
+
+// ===== Start =====
+
+displayUsers();
