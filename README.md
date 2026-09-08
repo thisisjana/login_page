@@ -25,13 +25,6 @@ A simple client-side signup and user management web application built for the NS
 * LocalStorage API
 * JSON
 
-## Validation
-
-* Username cannot be empty and must follow the required format
-* Email must follow a valid email format
-* Duplicate email addresses are not allowed
-* Password must meet the minimum length requirement
-* Validation errors are displayed clearly to the user
 
 ## Project Structure
 
@@ -48,7 +41,10 @@ The application follows a simple flow:
 
 **Signup → Validation → User Object → LocalStorage → Dashboard → Delete**
 
-User details are validated before being stored in the browser's LocalStorage. Registered users can then be viewed and managed from the dashboard.
+DEPLOYED LIVE LINK USING VERCEL: https://login-page-omega-silk.vercel.app/
+
+
+
 
 ## About
 
